@@ -14,8 +14,8 @@ HEADERS += \
     apphandler.h
 
 DISTFILES += \
-    android-sources/src/bz/jako/chromium_installer/MyToast.java \
-    android-sources/src/bz/jako/chromium_installer/Unzip.java \
-    android-sources/src/bz/jako/chromium_installer/AppInstaller.java \
+    android-sources/src/bz/jako/chromiumInstaller/MyToast.java \
+    android-sources/src/bz/jako/chromiumInstaller/Unzip.java \
+    android-sources/src/bz/jako/chromiumInstaller/AppInstaller.java \
     android-sources/AndroidManifest.xml \
     android-sources/res/values/libs.xml \

@@ -1,5 +1,5 @@
 <?xml version="1.0"?>
-<manifest package="bz.jako.chromium_installer" xmlns:android="http://schemas.android.com/apk/res/android" android:versionName="1.0.1" android:versionCode="1" android:installLocation="auto">
+<manifest package="bz.jako.chromiumInstaller" xmlns:android="http://schemas.android.com/apk/res/android" android:versionName="1.0.1" android:versionCode="1" android:installLocation="auto">
     <application android:hardwareAccelerated="true" android:name="org.qtproject.qt5.android.bindings.QtApplication" android:label="Chromium Installer" android:icon="@mipmap/ic_launcher">
         <activity android:configChanges="orientation|uiMode|screenLayout|screenSize|smallestScreenSize|layoutDirection|locale|fontScale|keyboard|keyboardHidden|navigation" android:name="org.qtproject.qt5.android.bindings.QtActivity" android:label="Chromium Installer" android:screenOrientation="unspecified" android:launchMode="singleTop">
             <intent-filter>

@@ -53,15 +53,15 @@ void AppHandler::downloadFinished()
 
     // show toast
     QAndroidJniObject message = QAndroidJniObject::fromString("Download finished, installing...");
-    QAndroidJniObject::callStaticMethod<void>("bz/jako/chromium_installer/MyToast", "toast", "(Ljava/lang/String;)V", message.object<jstring>());
+    QAndroidJniObject::callStaticMethod<void>("bz/jako/chromiumInstaller/MyToast", "toast", "(Ljava/lang/String;)V", message.object<jstring>());
 
     // unzip
     QAndroidJniObject zipFilePath = QAndroidJniObject::fromString("bla.zip");
     QAndroidJniObject extractPath = QAndroidJniObject::fromString("bla_entpackt");
-    QAndroidJniObject::callStaticMethod<void>("bz/jako/chromium_installer/Unzip", "extract", "(Ljava/lang/String;Ljava/lang/String;)V", zipFilePath.object<jstring>(), extractPath.object<jstring>());
+    QAndroidJniObject::callStaticMethod<void>("bz/jako/chromiumInstaller/Unzip", "extract", "(Ljava/lang/String;Ljava/lang/String;)V", zipFilePath.object<jstring>(), extractPath.object<jstring>());
 
     // message = QAndroidJniObject::fromString("Unzip finished!");
-    // QAndroidJniObject::callStaticMethod<void>("bz/jako/chromium_installer/MyToast", "toast", "(Ljava/lang/String;)V", message.object<jstring>());
+    // QAndroidJniObject::callStaticMethod<void>("bz/jako/chromiumInstaller/MyToast", "toast", "(Ljava/lang/String;)V", message.object<jstring>());
 
     // install apk
     QAndroidJniObject mediaDir = QAndroidJniObject::callStaticObjectMethod("android/os/Environment", "getExternalStorageDirectory", "()Ljava/io/File;");
@@ -90,5 +90,5 @@ bool AppHandler::fileExist(const QUrl &url)
 
 void AppHandler::installApk(const QString& apk) {
     QAndroidJniObject message = QAndroidJniObject::fromString(apk);
-    QAndroidJniObject::callStaticMethod<void>("bz/jako/chromium_installer/AppInstaller", "installAPK", "(Ljava/lang/String;)V", message.object<jstring>());
+    QAndroidJniObject::callStaticMethod<void>("bz/jako/chromiumInstaller/AppInstaller", "installAPK", "(Ljava/lang/String;)V", message.object<jstring>());
 }

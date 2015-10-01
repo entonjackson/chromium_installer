@@ -1,4 +1,4 @@
-package bz.jako.chromium_installer;
+package bz.jako.chromiumInstaller;
 
 import java.io.IOException;
 import java.io.File;

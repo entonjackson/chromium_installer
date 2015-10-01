@@ -1,4 +1,4 @@
-package bz.jako.chromium_installer;
+package bz.jako.chromiumInstaller;
 
 import android.widget.Toast;
 import android.view.Gravity;

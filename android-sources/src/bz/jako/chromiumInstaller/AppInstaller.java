@@ -1,4 +1,4 @@
-package bz.jako.chromium_installer;
+package bz.jako.chromiumInstaller;
 
 // import org.apache.commons.lang.StringUtils;
 import java.io.File;
