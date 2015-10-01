@@ -18,9 +18,4 @@ DISTFILES += \
     android-sources/src/bz/jako/chromium_installer/Unzip.java \
     android-sources/src/bz/jako/chromium_installer/AppInstaller.java \
     android-sources/AndroidManifest.xml \
-    android-sources/gradle/wrapper/gradle-wrapper.jar \
-    android-sources/gradlew \
     android-sources/res/values/libs.xml \
-    android-sources/build.gradle \
-    android-sources/gradle/wrapper/gradle-wrapper.properties \
-    android-sources/gradlew.bat
