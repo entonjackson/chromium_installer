@@ -7,19 +7,34 @@
 #include <QTcpSocket>
 #include <QAndroidJniObject>
 #include <QLatin1String>
+#include <QGuiApplication>
+
+QString ZIPNAME = "chrome-android.zip";
 
 AppHandler::AppHandler()
 {
     m_downloader = 0;
+    m_downloading = false;
 }
 
 void AppHandler::downloadLatest()
 {
+    if (m_downloading)
+        return;
+
+    m_downloading = true;
+
+    emit enableDownloadButton(false);
+    qApp->processEvents();
+    updateProgress(0.0);
     QUrl latestUrl = getLatestUrl();
+    if (latestUrl.isEmpty()) {
+        makeToast("Network Error :-(");
+        return;
+    }
     m_downloader = new FileDownloader(latestUrl);
     connect(m_downloader, SIGNAL(downloaded()), SLOT(downloadFinished()));
     connect(m_downloader, SIGNAL(updateProgress(float)), this, SIGNAL(updateProgress(float)));
-    // downloadFinished();
 }
 
 QUrl AppHandler::getLatestUrl()
@@ -27,14 +42,14 @@ QUrl AppHandler::getLatestUrl()
     QDateTime datetime1970(QDate(1970,1,1));
     unsigned int latestVersionAsNumber = 333843 + datetime1970.daysTo(QDateTime::currentDateTime());
 
-    QUrl latestUrl("https://storage.googleapis.com/chromium-browser-continuous/Android/" + QString::number(latestVersionAsNumber) + "/chrome-android.zip");
+    QUrl latestUrl("https://storage.googleapis.com/chromium-browser-continuous/Android/" + QString::number(latestVersionAsNumber) + "/" + ZIPNAME);
 
     short tries = 1;
     for (; !fileExist(latestUrl) && tries < 10; tries++) {
-        latestUrl = QUrl("https://storage.googleapis.com/chromium-browser-continuous/Android/" + QString::number(latestVersionAsNumber-tries) + "/chrome-android.zip");
+        latestUrl = QUrl("https://storage.googleapis.com/chromium-browser-continuous/Android/" + QString::number(latestVersionAsNumber-tries) + "/" + ZIPNAME);
     }
 
-    if (tries == 10) {
+    if (tries == 20) {
         return QUrl();
     }
 
@@ -43,32 +58,32 @@ QUrl AppHandler::getLatestUrl()
 
 void AppHandler::downloadFinished()
 {
+    updateProgress(0.8);
     QByteArray localDownloadedData = m_downloader->downloadedData();
     QString path = QStandardPaths::writableLocation(QStandardPaths::GenericDataLocation);
 
-    QFile file(path + QDir::separator() + "bla.zip");
+    QFile file(path + QDir::separator() + ZIPNAME);
     file.open(QIODevice::WriteOnly);
     file.write(localDownloadedData);
     file.close();
 
-    // show toast
-    QAndroidJniObject message = QAndroidJniObject::fromString("Download finished, installing...");
-    QAndroidJniObject::callStaticMethod<void>("bz/jako/chromiumInstaller/MyToast", "toast", "(Ljava/lang/String;)V", message.object<jstring>());
+    makeToast("Download finished, unzipping and installing. This can take some seconds. Please wait...");
+    updateProgress(1.0);
 
     // unzip
-    QAndroidJniObject zipFilePath = QAndroidJniObject::fromString("bla.zip");
-    QAndroidJniObject extractPath = QAndroidJniObject::fromString("bla_entpackt");
+    QAndroidJniObject zipFilePath = QAndroidJniObject::fromString(ZIPNAME);
+    QAndroidJniObject extractPath = QAndroidJniObject::fromString("chromium-installer");
     QAndroidJniObject::callStaticMethod<void>("bz/jako/chromiumInstaller/Unzip", "extract", "(Ljava/lang/String;Ljava/lang/String;)V", zipFilePath.object<jstring>(), extractPath.object<jstring>());
-
-    // message = QAndroidJniObject::fromString("Unzip finished!");
-    // QAndroidJniObject::callStaticMethod<void>("bz/jako/chromiumInstaller/MyToast", "toast", "(Ljava/lang/String;)V", message.object<jstring>());
 
     // install apk
     QAndroidJniObject mediaDir = QAndroidJniObject::callStaticObjectMethod("android/os/Environment", "getExternalStorageDirectory", "()Ljava/io/File;");
     QAndroidJniObject mediaPath = mediaDir.callObjectMethod( "getAbsolutePath", "()Ljava/lang/String;" );
 
-    QString apk = "/storage/sdcard0/bla_entpackt/chrome-android/apks/ChromePublic.apk";
+    QString apk = mediaPath.toString() + "/" + extractPath.toString() + "/chrome-android/apks/ChromePublic.apk";
     installApk(apk);
+    updateProgress(1.0);
+    m_downloading = false;
+    emit enableDownloadButton(true);
 }
 
 bool AppHandler::fileExist(const QUrl &url)
@@ -91,4 +106,9 @@ bool AppHandler::fileExist(const QUrl &url)
 void AppHandler::installApk(const QString& apk) {
     QAndroidJniObject message = QAndroidJniObject::fromString(apk);
     QAndroidJniObject::callStaticMethod<void>("bz/jako/chromiumInstaller/AppInstaller", "installAPK", "(Ljava/lang/String;)V", message.object<jstring>());
+}
+
+void AppHandler::makeToast(const QString& message) {
+    QAndroidJniObject msg = QAndroidJniObject::fromString(message);
+    QAndroidJniObject::callStaticMethod<void>("bz/jako/chromiumInstaller/MyToast", "toast", "(Ljava/lang/String;)V", msg.object<jstring>());
 }

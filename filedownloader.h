@@ -20,11 +20,12 @@ class FileDownloader : public QObject
 
  private slots:
   void fileDownloaded(QNetworkReply* pReply);
-  void handleBytes(qint64 bytes);
+  void handleBytes(qint64 bytes, qint64 total);
 
  private:
   QNetworkAccessManager m_WebCtrl;
   QByteArray m_DownloadedData;
+  QNetworkReply* m_Reply;
   qint64 m_bytes;
 };
 
