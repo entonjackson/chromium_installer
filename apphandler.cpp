@@ -13,7 +13,7 @@
 #include <QEventLoop>
 
 QString ZIPNAME = "chrome-android.zip";
-QString LAST_CHANGE = "https://www.googleapis.com/download/storage/v1/b/chromium-browser-continuous/o/Android%2FLAST_CHANGE?generation=1443865822830000&alt=media";
+QString LAST_CHANGE = "https://www.googleapis.com/download/storage/v1/b/chromium-browser-continuous/o/Android%2FLAST_CHANGE?alt=media";
 
 AppHandler::AppHandler()
 {
@@ -32,6 +32,7 @@ void AppHandler::downloadLatest()
     qApp->processEvents();
     updateProgress(0.0);
     QUrl latestUrl = getLatestUrl();
+
     if (latestUrl.isEmpty()) {
         AndroidUtils::makeToast("Network Error :-(");
         return;
@@ -62,7 +63,6 @@ void AppHandler::downloadFinished()
     updateProgress(0.8);
     QByteArray localDownloadedData = m_downloader->downloadedData();
     QString path = QStandardPaths::writableLocation(QStandardPaths::GenericDataLocation);
-    AndroidUtils::makeToast(path);
 
     QFile file(path + QDir::separator() + ZIPNAME);
     file.open(QIODevice::WriteOnly);
