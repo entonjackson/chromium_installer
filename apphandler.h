@@ -28,7 +28,6 @@ protected slots:
 protected:
     bool fileExist(const QUrl &url);
     void installApk(const QString& apk);
-    void makeToast(const QString& message);
 
 private:
     FileDownloader* m_downloader;

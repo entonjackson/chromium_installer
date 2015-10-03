@@ -1,5 +1,7 @@
 #include "apphandler.h"
 
+#include "androidutils.h"
+
 #include <QDateTime>
 #include <QFile>
 #include <QStandardPaths>
@@ -8,8 +10,10 @@
 #include <QAndroidJniObject>
 #include <QLatin1String>
 #include <QGuiApplication>
+#include <QEventLoop>
 
 QString ZIPNAME = "chrome-android.zip";
+QString LAST_CHANGE = "https://www.googleapis.com/download/storage/v1/b/chromium-browser-continuous/o/Android%2FLAST_CHANGE?generation=1443865822830000&alt=media";
 
 AppHandler::AppHandler()
 {
@@ -29,7 +33,7 @@ void AppHandler::downloadLatest()
     updateProgress(0.0);
     QUrl latestUrl = getLatestUrl();
     if (latestUrl.isEmpty()) {
-        makeToast("Network Error :-(");
+        AndroidUtils::makeToast("Network Error :-(");
         return;
     }
     m_downloader = new FileDownloader(latestUrl);
@@ -39,21 +43,18 @@ void AppHandler::downloadLatest()
 
 QUrl AppHandler::getLatestUrl()
 {
-    QDateTime datetime1970(QDate(1970,1,1));
-    unsigned int latestVersionAsNumber = 333843 + datetime1970.daysTo(QDateTime::currentDateTime());
+    QNetworkAccessManager downloader;
+    QNetworkReply* reply = downloader.get(QNetworkRequest(QUrl(LAST_CHANGE)));
 
-    QUrl latestUrl("https://storage.googleapis.com/chromium-browser-continuous/Android/" + QString::number(latestVersionAsNumber) + "/" + ZIPNAME);
+    QEventLoop loop;
+    connect(reply, SIGNAL(finished()), &loop, SLOT(quit()));
+    loop.exec();
 
-    short tries = 1;
-    for (; !fileExist(latestUrl) && tries < 10; tries++) {
-        latestUrl = QUrl("https://storage.googleapis.com/chromium-browser-continuous/Android/" + QString::number(latestVersionAsNumber-tries) + "/" + ZIPNAME);
-    }
+    QString dataString(reply->readAll());
 
-    if (tries == 20) {
-        return QUrl();
-    }
+    reply->deleteLater();
 
-    return latestUrl;
+    return QUrl("https://storage.googleapis.com/chromium-browser-continuous/Android/" + dataString + "/" + ZIPNAME);
 }
 
 void AppHandler::downloadFinished()
@@ -61,13 +62,14 @@ void AppHandler::downloadFinished()
     updateProgress(0.8);
     QByteArray localDownloadedData = m_downloader->downloadedData();
     QString path = QStandardPaths::writableLocation(QStandardPaths::GenericDataLocation);
+    AndroidUtils::makeToast(path);
 
     QFile file(path + QDir::separator() + ZIPNAME);
     file.open(QIODevice::WriteOnly);
     file.write(localDownloadedData);
     file.close();
 
-    makeToast("Download finished, unzipping and installing. This can take some seconds. Please wait...");
+    AndroidUtils::makeToast("Download finished... installing. This can take some seconds. Please wait...");
     updateProgress(1.0);
 
     // unzip
@@ -81,9 +83,9 @@ void AppHandler::downloadFinished()
 
     QString apk = mediaPath.toString() + "/" + extractPath.toString() + "/chrome-android/apks/ChromePublic.apk";
     installApk(apk);
-    updateProgress(1.0);
     m_downloading = false;
     emit enableDownloadButton(true);
+    updateProgress(0.0);
 }
 
 bool AppHandler::fileExist(const QUrl &url)
@@ -106,9 +108,4 @@ bool AppHandler::fileExist(const QUrl &url)
 void AppHandler::installApk(const QString& apk) {
     QAndroidJniObject message = QAndroidJniObject::fromString(apk);
     QAndroidJniObject::callStaticMethod<void>("bz/jako/chromiumInstaller/AppInstaller", "installAPK", "(Ljava/lang/String;)V", message.object<jstring>());
-}
-
-void AppHandler::makeToast(const QString& message) {
-    QAndroidJniObject msg = QAndroidJniObject::fromString(message);
-    QAndroidJniObject::callStaticMethod<void>("bz/jako/chromiumInstaller/MyToast", "toast", "(Ljava/lang/String;)V", msg.object<jstring>());
 }

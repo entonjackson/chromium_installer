@@ -25,7 +25,6 @@ QByteArray FileDownloader::downloadedData() const {
 
 void FileDownloader::handleBytes(qint64 bytes, qint64 total) {
     float progress = (double)bytes/(double)total;
-    progress -= 0.2; // subtract 0.2 for unzip/install step
     if (progress > 0.0)
-        emit updateProgress(progress);
+        emit updateProgress(progress*0.9);
 }

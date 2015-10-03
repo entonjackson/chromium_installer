@@ -7,7 +7,7 @@ import org.example 1.0
 Item {
     Button {
         id: button
-        text: "Install latest Chromium"
+        text: qsTr("Install latest Chromium")
         anchors.horizontalCenter: parent.horizontalCenter
         anchors.verticalCenter: parent.verticalCenter
 
